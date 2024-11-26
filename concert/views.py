@@ -14,7 +14,21 @@ import requests as req
 # Create your views here.
 
 def signup(request):
-    pass
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        try:
+            user = User.objects.filter(username=username).first()
+            if user:
+                return render(request, "signup.html", {"form": SignUpForm, "message": "user already exist"})
+            else:
+                user = User.objects.create(
+                    username=username, password=make_password(password))
+                login(request, user)
+                return HttpResponseRedirect(reverse("index"))
+        except User.DoesNotExist:
+            return render(request, "signup.html", {"form": SignUpForm})
+    return render(request, "signup.html", {"form": SignUpForm})
 
 
 def index(request):
@@ -22,23 +36,64 @@ def index(request):
 
 
 def songs(request):
-    # songs = {"songs":[]}
-    # return render(request, "songs.html", {"songs": [insert list here]})
+    songs = {"songs":[{"id":1,"title":"duis faucibus accumsan odio curabitur convallis","lyrics":"Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis."}]}
+    return render(request, "songs.html", {"songs":songs["songs"]})
     pass
 
 
 def photos(request):
-    # photos = []
-    # return render(request, "photos.html", {"photos": photos})
+   if request.method == "POST":
+    if request.method == "POST":
+    username = {insert code to get username from the request}
+    password = {insert code to get password from the request}
+    try:
+        user = {insert code to find the user with the username}
+
+        if {insert code to check the username and password}:
+            {insert code to log in the using the django.contrib.auth module}
+            return HttpResponseRedirect(reverse("index"))
+    except User.DoesNotExist:
+        return {insert code to render the `login.html` method using the `LoginForm` form}
     pass
 
 def login_view(request):
-    pass
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        try:
+            user = User.objects.get(username=username)
+
+            if user.check_password(password):
+                login(request, user)
+                return HttpResponseRedirect(reverse("index"))
+        except User.DoesNotExist:
+            return render(request, "login.html", {"form": LoginForm})
+    return render(request, "login.html", {"form": LoginForm})
 
 def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(reverse("login"))
+    {insert code to logout the user using the django.contrib.auth module}
+    {insert code to return the user to the login page using the HttpResponseRedirect module}
     pass
 
 def concerts(request):
+    if request.user.is_authenticated:
+        lst_of_concert = []
+        concert_objects = Concert.objects.all()
+        for item in concert_objects:
+            try:
+                status = item.attendee.filter(
+                    user=request.user).first().attending
+            except:
+                status = "-"
+            lst_of_concert.append({
+                "concert": item,
+                "status": status
+            })
+        return render(request, "concerts.html", {"concerts": lst_of_concert})
+    else:
+        return HttpResponseRedirect(reverse("login"))
     pass
 
 
